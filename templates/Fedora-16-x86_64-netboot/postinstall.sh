@@ -14,10 +14,18 @@ yum -y install \
 
 yum clean all
 
-mount /dev/cdrom1 /mnt
-sh /mnt/VBoxLinuxAdditions.run
-umount /mnt
-restorecon -R /opt/VBoxGuestAdditions-${VBOX_VERSION}
+for cdrom in /dev/cdrom*; do
+  mount ${cdrom} /mnt
+  if [ -x /mnt/VBoxLinuxAdditions.run ]; then
+    sh /mnt/VBoxLinuxAdditions.run
+    umount /mnt
+    restorecon -R /opt/VBoxGuestAdditions-${VBOX_VERSION}
+    break
+  else
+    umount /mnt
+  fi
+done
+[ -d /opt/VBoxGuestAdditions-${VBOX_VERSION} ] || exit 1
 
 gem install chef puppet --no-rdoc --no-ri
 
